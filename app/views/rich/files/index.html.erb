@@ -1,5 +1,6 @@
 <header>
-
+  <% frequently_used = params[:frequently_used].present? && params[:frequently_used] == "true" %>
+  <input type="hidden" id="frequently_used" class="form-control" value="<%= frequently_used %>">
 	<div id="loading" style="display:none;"></div>
 
   <div id="view-toggle">
@@ -13,59 +14,235 @@
   </div>
 
   <ul id="styles" class="scopes">
-    <li class="label"><%= t(:available_styles) %></li>
+    <li class="label" style="line-height: 16px;"><%= t(:available_styles) %></li>
   </ul>
+
+  <div id="frequently-toggle">
+    <% if frequently_used %>
+      <a href="<%= "#{request.original_fullpath}" + "&frequently_used=false" %>" id="not-frequently-used" title="<%= t(:not_frequently_used) %>" class="btn-select" ><%= t(:not_frequently_used) %></a>
+    <% else %>
+      <a href="<%= "#{request.original_fullpath}" + "&frequently_used=true" %>" id="frequently-used" title="<%= t(:frequently_used) %>" class="btn-select"> <%= t(:frequently_used) %></a>
+    <% end %>
+  </div>
 
 </header>
 
-<div id="legacy-form"><%= form_for(@rich_asset, :url => files_path) do |f| %>
-  <p><%= f.file_field :rich_file%></p>
-  <%= f.submit("Upload") %>
-<% end %>
+<div id="legacy-form">
+  <%= form_for(@rich_asset, :url => files_path) do |f| %>
+    <p><%= f.file_field :rich_file %></p>
+    <%= f.submit("Upload") %>
+  <% end %>
 </div>
 
 <ul id="items">
-  <li id="uploadBlock">
-    <p class="rich-file-title"></p>
-    <div id="upload" class="qq-upload-button placeholder">
-      <div class="spinner" data-toggle="modal" data-target="#rich-upload-modal" style="cursor: pointer;"></div>
-    </div>
-    <p><%= t(:upload_a_file) %></p>
-  </li>
-
-	<%= render :partial => "file", :collection => @items, :as => :file %>
-
+  <% if frequently_used %>
+    <li id="uploadBlock">
+      <p class="rich-file-title"></p>
+      <div id="upload" class="qq-upload-button placeholder">
+        <div class="spinner" data-toggle="modal" data-target="#rich-upload-modal" style="cursor: pointer;"></div>
+      </div>
+      <p><%= t(:upload_a_file) %></p>
+    </li>
+  <% else %>
+    <li id="uploadBlock" class="item-default">
+      <div id="upload_frequently" class="qq-upload-button placeholder upload-frequently">
+        <div class="spinner"></div>
+      </div>
+      <p><%= t(:upload_a_file) %></p>
+    </li>
+  <% end %>
+  <%= render :partial => "file", :collection => @items , :as => :file, :locals => {:frequently_used => frequently_used} %>
 </ul>
 
-<div id="rich-upload-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header clearfix">
-        <h3 class="modal-title pull-left"><%= t(:upload_a_file) %></h3>
-      </div>
-      <div class="modal-body bg-gray">
-        <div class="form-group">
-          <label>管理画面上のファイル名</label>
-          <input type="text" id="rich_file_title" class="form-control" >
+<% if frequently_used %>
+  <div id="rich-upload-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header clearfix">
+          <h3 class="modal-title pull-left"><%= t(:upload_a_file) %></h3>
         </div>
-        <div class="form-group">
-          <label>URL</label>
-          <input type="text" id="rich_file_link_to" class="form-control" >
-        </div>
-        <div class="form-group" id="uploadWrapper">
-          <label>Select an image</label>
-          <div>
-            <div class="btn btn-primary" id="btn-upload-image">
-              <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+        <div class="modal-body bg-gray">
+          <div class="form-group">
+            <label>管理画面上のファイル名</label>
+            <input type="text" id="rich_file_title" class="form-control" >
+          </div>
+          <div class="form-group">
+            <label>URL</label>
+            <input type="text" id="rich_file_link_to" class="form-control" >
+          </div>
+          <input type="hidden" id="rich_file_frequently_used" class="form-control" value="true">
+          <div class="form-group" id="uploadWrapper">
+            <label>Select an image</label>
+            <div>
+              <div class="btn btn-primary" id="btn-upload-image">
+                <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+                <!-- <input multiple="multiple" type="file" name="file" style="position: absolute; right: 0px; top: 0px; font-family: Arial; font-size: 118px; margin: 0px; padding: 0px; cursor: pointer; opacity: 0;"> -->
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="box-footer clearfix" style="text-align: center;">
-            <button type="button" data-dismiss="modal" class="btn btn-default">キャンセル</button>
-            <button type="submit" class="btn btn-primary" id="rich-start-upload">登録</button>
+          <div class="box-footer clearfix" style="text-align: center;">
+              <button type="button" data-dismiss="modal" class="btn btn-default">キャンセル</button>
+              <button type="submit" class="btn btn-primary" id="rich-start-upload">登録</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+<% end %>
+
+<script type="text/javascript">
+// Implementation of the QQ FileUploader class for use in Rich
+
+<% if frequently_used %>
+  var rich = rich || {};
+
+  rich.Uploader = function(){
+    
+    this._options = {
+      uploadButtonId: 'btn-upload-image',
+      insertionPoint: 'uploadBlock',
+      uploadType: $.QueryString["type"],
+      scoped: $.QueryString["scoped"],
+      scope_type: $.QueryString["scope_type"],
+      scope_id: $.QueryString["scope_id"],
+    };
+    
+    // create the qq uploader
+    var self = this;
+    var uploader = new qq.FileUploaderBasic({
+          button: document.getElementById(self._options.uploadButtonId),
+          multiple: true,
+      maxConnections: 3,
+      action: $("#new_rich_file").attr("action"),
+      params: { authenticity_token: $("input[name='authenticity_token']").attr("value"),
+              simplified_type: this._options.uploadType,
+            scoped: this._options.scoped,
+            scope_type: this._options.scope_type,
+            scope_id: this._options.scope_id,
+            file_title: '',
+            file_link_to: '',
+            file_frequently_used: ''
+      },
+      debug: true,
+      onComplete: function(id, fileName, responseJSON) { self.uploadComplete(id, fileName, responseJSON); },
+      onSubmit: function(id, fileName) { self.uploadSubmit(id, fileName); },
+      onProgress: function(id, fileName, loaded, total) { self.uploadProgress(id, fileName, Math.round(loaded/total*100)); }
+    });
+
+      $('#rich-start-upload').click(function(){
+          uploader.addParams({
+              file_title: $('#rich_file_title').val(),
+              file_link_to: $('#rich_file_link_to').val(),
+              file_frequently_used: $('#rich_file_frequently_used').val()
+          });
+          uploader._uploadStoredFile();
+      });
+  };
+
+  rich.Uploader.prototype = {
+
+    uploadComplete: function(id, fileName, response){
+      if (response.success){
+        $('#up'+id+' .progress-bar').first().width("100%");
+        $('#up'+id+' .spinner').first().addClass("spinning");
+        //get the created image object's id from the response and use it to request the thumbnail
+        $.get("/rich/files/"+response.rich_id, function(data) {
+          $('#up'+id).replaceWith(data).addClass("test");
+          $('#image'+response.rich_id).addClass("new");
+        });
+      } else {
+          $('#up'+id+' .spinner').first().addClass("error");
+          $('#up'+id+' .spinner').first().removeClass("spinning");
+          $('#up'+id+' .progress-bar').first().remove();
+      }
+    },
+
+    uploadSubmit: function(id, fileName) {
+      // insert a new image placeholder after the upload button
+      $('#'+this._options.insertionPoint).after('<li id="up'+id+'"><p class="rich-file-title"></p><div class="placeholder progress"><div class="progress-bar" style="width: 0%;"></div><div class="spinner"></div></div><p>'+fileName+'</p></li>');
+      // Close modal & clear textbox
+      $('#rich-upload-modal').modal('hide');
+      $('#rich_file_title').val('');
+      $('#rich_file_link_to').val('');
+    },
+    
+    uploadProgress: function(id, fileName, progress) {
+      $('#up'+id+' .progress-bar').first().width(progress+"%");
+      
+      if(progress > 90) {
+        // start spinning
+        $('#up'+id+' .spinner').first().addClass("spinning");
+      }
+    },
+
+  };
+<% else %>
+  var rich2 = rich || {};
+
+  rich2.Uploader = function(){
+    
+    this._options = {
+      uploadButtonId: 'upload_frequently',
+      insertionPoint: 'uploadBlock',
+      uploadType: $.QueryString["type"],
+      scoped: $.QueryString["scoped"],
+      scope_type: $.QueryString["scope_type"],
+      scope_id: $.QueryString["scope_id"]
+    };
+    
+    // create the qq uploader
+    var self = this;
+    var uploader = new qq.FileUploaderBasic({
+      button: document.getElementById(self._options.uploadButtonId),
+      multiple: true,
+      maxConnections: 3,
+      action: $("#new_rich_file").attr("action"),
+      params: { authenticity_token: $("input[name='authenticity_token']").attr("value"),
+              simplified_type: this._options.uploadType,
+            scoped: this._options.scoped,
+            scope_type: this._options.scope_type,
+            scope_id: this._options.scope_id
+      },
+      debug: true,
+      onComplete: function(id, fileName, responseJSON) { self.uploadComplete(id, fileName, responseJSON); },
+      onSubmit: function(id, fileName) { self.uploadSubmit(id, fileName); },
+      onProgress: function(id, fileName, loaded, total) { self.uploadProgress(id, fileName, Math.round(loaded/total*100)); }
+    });
+  };
+
+  rich2.Uploader.prototype = {
+
+    uploadComplete: function(id, fileName, response){
+      if (response.success){
+        $('#up'+id+' .progress-bar').first().width("100%");
+        $('#up'+id+' .spinner').first().addClass("spinning");
+        //get the created image object's id from the response and use it to request the thumbnail
+        $.get("/rich/files/"+response.rich_id, function(data) {
+          $('#up'+id).replaceWith(data).addClass("test");
+          $('#image'+response.rich_id).addClass("new");
+        });
+      } else {
+          $('#up'+id+' .spinner').first().addClass("error");
+          $('#up'+id+' .spinner').first().removeClass("spinning");
+                  $('#up'+id+' .progress-bar').first().remove();
+      }
+    },
+
+    uploadSubmit: function(id, fileName) {
+      // insert a new image placeholder after the upload button
+      $('#'+this._options.insertionPoint).after('<li id="up'+id+'" class="item-default"><div class="placeholder progress"><div class="progress-bar" style="width: 0%;"></div><div class="spinner"></div></div><p>'+fileName+'</p></li>');
+    },
+    
+    uploadProgress: function(id, fileName, progress) {
+      $('#up'+id+' .progress-bar').first().width(progress+"%");
+      
+      if(progress > 90) {
+        // start spinning
+        $('#up'+id+' .spinner').first().addClass("spinning");
+      }
+    },
+
+  };
+<% end %>
+</script>

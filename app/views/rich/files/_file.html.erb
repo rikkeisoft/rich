@@ -1,25 +1,41 @@
-<li class="clickable">
-  <p class="rich-file-title"><%= file.rich_file_title %></p>
-  <img  id="file<%= file.id %>"
-        src="<%= thumb_for_file(file) %>"
-        data-uris="<%= file.uri_cache %>"
-        data-rich-asset-id="<%= file.id %>"
-				data-rich-asset-type="<%= file.simplified_type %>"
-				data-rich-asset-name="<%= file.rich_file_file_name %>"
-        data-rich-file-link-to="<%= file.rich_file_link_to %>"
-  />
-  <div class="rich-item-info">
+<% if frequently_used == true %>
+  <li class="clickable">
+    <p class="rich-file-title"><%= file.rich_file_title %></p>
+    <img  id="file<%= file.id %>"
+          src="<%= thumb_for_file(file) %>"
+          data-uris="<%= file.uri_cache %>"
+          data-rich-asset-id="<%= file.id %>"
+  				data-rich-asset-type="<%= file.simplified_type %>"
+  				data-rich-asset-name="<%= file.rich_file_file_name %>"
+          data-rich-file-link-to="<%= file.rich_file_link_to %>"
+    />
+    <div class="rich-item-info">
+      <p><%= file.rich_file_file_name %></p>
+      <%= link_to "delete", "/rich/files/"+file.id.to_s, :method => :delete, :remote => true, :data => { :confirm => t(:delete_confirm) }, :class => "delete", :title => t(:delete) %>
+      <%= 
+      raw (file.rich_file_link_to.nil? || file.rich_file_link_to.empty?) ? '' : 
+      '<a href="' << file.rich_file_link_to << '" class="rich-file-link-to">' << file.rich_file_link_to << '</a>' 
+      %>
+    </div>
+    <div class="form-group rich-file-actions">
+      <% if (!file.rich_file_link_to.blank?) %>
+        <a href='javascript:void();' class="btn btn-sm btn-primary rich-has-link" style="margin-bottom:5px;">リンクあり</a>
+      <% end %>
+      <a href='javascript:void();' class="btn btn-sm btn-primary rich-no-link">リンクなし</a>
+    </div>
+  </li>
+<% else %>
+  <li class="clickable item-default">
+    <a href='javascript:void();' class="rich-no-link">
+      <img  id="file<%= file.id %>"
+            src="<%= thumb_for_file(file) %>"
+            data-uris="<%= file.uri_cache %>"
+            data-rich-asset-id="<%= file.id %>"
+            data-rich-asset-type="<%= file.simplified_type %>"
+            data-rich-asset-name="<%= file.rich_file_file_name %>"
+      />
+    </a>
     <p><%= file.rich_file_file_name %></p>
     <%= link_to "delete", "/rich/files/"+file.id.to_s, :method => :delete, :remote => true, :data => { :confirm => t(:delete_confirm) }, :class => "delete", :title => t(:delete) %>
-    <%= 
-    raw (file.rich_file_link_to.nil? || file.rich_file_link_to.empty?) ? '' : 
-    '<a href="' << file.rich_file_link_to << '" class="rich-file-link-to">' << file.rich_file_link_to << '</a>' 
-    %>
-  </div>
-  <div class="form-group rich-file-actions">
-    <% if (!file.rich_file_link_to.blank?) %>
-      <a href='javascript:void();' class="btn btn-sm btn-primary rich-has-link" style="margin-bottom:5px;">リンクあり</a>
-    <% end %>
-    <a href='javascript:void();' class="btn btn-sm btn-primary rich-no-link">リンクなし</a>
-  </div>
-</li>
+  </li>
+<% end %>

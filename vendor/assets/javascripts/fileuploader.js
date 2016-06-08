@@ -304,15 +304,24 @@ qq.FileUploaderBasic.prototype = {
     },
     _createUploadButton: function(element){
         var self = this;
+        var frequently_used = $("#frequently_used").val();
+        
+        if (frequently_used == "false") {
+            return new qq.UploadButton({
+                element: element,
+                multiple: this._options.multiple && qq.UploadHandlerXhr.isSupported(),
+                // Disable auto upload
+                onChange: function(input){
+                  self._onInputChange(input);
+                }
+            });
+        }else{
+            return new qq.UploadButton({
+                element: element,
+                multiple: this._options.multiple && qq.UploadHandlerXhr.isSupported(),
+            });
+        }
 
-        return new qq.UploadButton({
-            element: element,
-            multiple: this._options.multiple && qq.UploadHandlerXhr.isSupported(),
-            // Disable auto upload
-            //onChange: function(input){
-            //    self._onInputChange(input);
-            //}
-        });
     },
     _createUploadHandler: function(){
         var self = this,

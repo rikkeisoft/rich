@@ -8,19 +8,26 @@ module Rich
 
     def index
       @type = params[:type]
+      @frequently_used = params[:frequently_used]
 
       if(params[:scoped] == 'true')
         if(@type == "image")
-          @items = RichFile.images.order("created_at DESC").where("owner_type = ? AND owner_id = ?", params[:scope_type], params[:scope_id]).page params[:page]
+          @items = RichFile.images.order("created_at DESC").where("owner_type = ? AND owner_id = ?", params[:scope_type], params[:scope_id])
         else
-          @items = RichFile.files.order("created_at DESC").where("owner_type = ? AND owner_id = ?", params[:scope_type], params[:scope_id]).page params[:page]
+          @items = RichFile.files.order("created_at DESC").where("owner_type = ? AND owner_id = ?", params[:scope_type], params[:scope_id])
         end
       else
         if(@type == "image")
-          @items = RichFile.images.order("created_at DESC").page params[:page]
+          @items = RichFile.images.order("created_at DESC")
         else
-          @items = RichFile.files.order("created_at DESC").page params[:page]
+          @items = RichFile.files.order("created_at DESC")
         end
+      end
+      
+      if @frequently_used.present? && @frequently_used == "true"
+        @items = @items.where(frequently_used: true).page params[:page]
+      else
+        @items = @items.where(frequently_used: false).page params[:page]
       end
 
       # stub for new file
@@ -57,6 +64,7 @@ module Rich
 
       @file.rich_file_title = params[:file_title]
       @file.rich_file_link_to = params[:file_link_to]
+      @file.frequently_used = params[:file_frequently_used]
 
       # use the file from Rack Raw Upload
       file_params = params[:file] || params[:qqfile]
@@ -72,6 +80,8 @@ module Rich
                      :error => "Could not upload your file:\n- "+@file.errors.to_a[-1].to_s,
                      :params => params.inspect }
       end
+
+      @frequently_used = @file.frequently_used
 
       render :json => response, :content_type => "text/html"
     end
