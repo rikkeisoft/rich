@@ -62,8 +62,8 @@ module Rich
         @file.owner_id = params[:scope_id].to_i
       end
 
-      @file.rich_file_title = params[:file_title]
-      @file.rich_file_link_to = params[:file_link_to]
+      @file.rich_file_title = params[:file_title] if params[:file_title].present?
+      @file.rich_file_link_to = params[:file_link_to] if params[:file_link_to].present?
       @file.frequently_used = params[:file_frequently_used] if params[:file_frequently_used].present?
 
       # use the file from Rack Raw Upload

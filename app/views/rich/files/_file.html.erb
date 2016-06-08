@@ -1,5 +1,5 @@
-<% if frequently_used == true %>
-  <li class="clickable">
+<% if frequently_used.present? && frequently_used == true %>
+  <li id="file-item<%= file.id %>" class="clickable">
     <p class="rich-file-title"><%= file.rich_file_title %></p>
     <img  id="file<%= file.id %>"
           src="<%= thumb_for_file(file) %>"
@@ -25,7 +25,7 @@
     </div>
   </li>
 <% else %>
-  <li class="clickable item-default">
+  <li id="file-item<%= file.id %>" class="clickable item-default">
     <a href='javascript:void();' class="rich-no-link">
       <img  id="file<%= file.id %>"
             src="<%= thumb_for_file(file) %>"
@@ -35,7 +35,9 @@
             data-rich-asset-name="<%= file.rich_file_file_name %>"
       />
     </a>
-    <p><%= file.rich_file_file_name %></p>
-    <%= link_to "delete", "/rich/files/"+file.id.to_s, :method => :delete, :remote => true, :data => { :confirm => t(:delete_confirm) }, :class => "delete", :title => t(:delete) %>
+    <div>
+      <p><%= file.rich_file_file_name %></p>
+      <%= link_to "delete", "/rich/files/"+file.id.to_s, :method => :delete, :remote => true, :data => { :confirm => t(:delete_confirm) }, :class => "delete", :title => t(:delete) %>
+    </div>
   </li>
 <% end %>
