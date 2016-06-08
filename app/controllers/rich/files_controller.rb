@@ -64,7 +64,7 @@ module Rich
 
       @file.rich_file_title = params[:file_title]
       @file.rich_file_link_to = params[:file_link_to]
-      @file.frequently_used = params[:file_frequently_used]
+      @file.frequently_used = params[:file_frequently_used] if params[:file_frequently_used].present?
 
       # use the file from Rack Raw Upload
       file_params = params[:file] || params[:qqfile]
