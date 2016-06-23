@@ -8,8 +8,7 @@ module Rich
 
     def index
       @type = params[:type]
-      @frequently_used = params[:frequently_used]
-
+      
       if(params[:scoped] == 'true')
         if(@type == "image")
           @items = RichFile.images.order("created_at DESC").where("owner_type = ? AND owner_id = ?", params[:scope_type], params[:scope_id])
@@ -24,7 +23,9 @@ module Rich
         end
       end
       
-      if @frequently_used.present? && @frequently_used == "true"
+      @frequently_used = params[:frequently_used].present? && params[:frequently_used] == "true"
+
+      if @frequently_used
         @items = @items.where(frequently_used: true).page params[:page]
       else
         @items = @items.where(frequently_used: false).page params[:page]
