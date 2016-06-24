@@ -13,6 +13,9 @@
 				} else {
 					this.insertHtml('<a href="' + link + '"><img src="' + url + '" alt="" data-rich-file-id="' + id + '" /></a>');
 				}
+				$('html, body').animate({
+		      scrollTop: $("#cke_article_writer_body").offset().top - 51
+		    }, 0);
 			}, editor);
 
 			editor._.insertFilefn = CKEDITOR.tools.addFunction(function(url, id, name){
