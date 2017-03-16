@@ -58,13 +58,13 @@ module Rich
 
     def clean_file_name
       extension = File.extname(rich_file_file_name).gsub(/^\.+/, '')
-      filename = rich_file_file_name.gsub(/\.#{extension}$/, '')
+      # filename = rich_file_file_name.gsub(/\.#{extension}$/, '')
 
-      filename = CGI::unescape(filename)
-      filename = CGI::unescape(filename)
+      # filename = CGI::unescape(filename)
+      # filename = CGI::unescape(filename)
 
       extension = extension.downcase
-      filename = filename.downcase.gsub(/[^a-z0-9]+/i, '-')
+      filename = SecureRandom.hex
 
       self.rich_file.instance_write(:file_name, "#{filename}.#{extension}")
     end
